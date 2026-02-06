@@ -1,0 +1,7 @@
+{
+  "name": "Capital Traders - Premium Tyre Solutions",
+  "description": "A comprehensive tyre retail dashboard for Capital Traders, featuring brand management, vehicle-to-tyre matching for the Pakistan market, service listings, and a dynamic theme engine.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
