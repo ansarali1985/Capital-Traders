@@ -14,6 +14,19 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
 
   if (!brand) return <div className="p-20 text-center">Brand not found</div>;
 
+  const handleWhatsAppInquiry = (tyre: any) => {
+    const cleanNumber = state.businessInfo.whatsapp.replace(/\D/g, '');
+    const message = encodeURIComponent(
+      `Hi ${state.businessInfo.name}, I am interested in the following tyre:\n\n` +
+      `*Brand:* ${brand.name}\n` +
+      `*Pattern:* ${tyre.pattern}\n` +
+      `*Size:* ${tyre.size}\n` +
+      `*Price:* Rs. ${tyre.price.toLocaleString()}\n\n` +
+      `Is this available in stock?`
+    );
+    window.open(`https://wa.me/${cleanNumber}?text=${message}`, '_blank');
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
       <button 
@@ -61,8 +74,11 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
                     {tyre.stock > 0 ? `In Stock (${tyre.stock})` : 'Out of Stock'}
                   </span>
                 </div>
-                <button className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors">
-                  Inquire via WhatsApp
+                <button 
+                  onClick={() => handleWhatsAppInquiry(tyre)}
+                  className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                  <i className="fab fa-whatsapp"></i> Inquire via WhatsApp
                 </button>
               </div>
             </div>
