@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { AppState, Brand, Tyre, Vehicle, Service } from '../types';
+import { AppState, Brand, Tyre, Vehicle, Service, BusinessInfo } from '../types';
 import { THEMES } from '../constants';
 import Logo from '../components/Logo';
 
@@ -30,6 +30,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [newVehicle, setNewVehicle] = useState<Partial<Vehicle>>({});
   const [newTyre, setNewTyre] = useState<Partial<Tyre>>({});
   const [newService, setNewService] = useState<Partial<Service>>({});
+  const [editBusiness, setEditBusiness] = useState<BusinessInfo>(state.businessInfo);
 
   // Editing state IDs
   const [editingBrandId, setEditingBrandId] = useState<string | null>(null);
@@ -98,6 +99,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       updateState({ brands: [...state.brands, brand] });
     }
     setNewBrand({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const saveTyre = () => {
@@ -119,6 +121,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       updateState({ tyres: [...state.tyres, tyre] });
     }
     setNewTyre({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const saveVehicle = () => {
@@ -139,6 +142,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       updateState({ vehicles: [...state.vehicles, vehicle] });
     }
     setNewVehicle({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const saveService = () => {
@@ -158,6 +162,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       updateState({ services: [...state.services, service] });
     }
     setNewService({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const saveBusinessInfo = () => {
+    updateState({ businessInfo: editBusiness });
+    alert('Business information updated successfully!');
   };
 
   const deleteItem = (type: string, id: string) => {
@@ -248,7 +258,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <span className="font-black">{b.name}</span>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => { setNewBrand(b); setEditingBrandId(b.id); }} className="text-blue-600"><i className="fas fa-edit"></i></button>
+                    <button onClick={() => { setNewBrand(b); setEditingBrandId(b.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-600"><i className="fas fa-edit"></i></button>
                     <button onClick={() => deleteItem('brands', b.id)} className="text-red-600"><i className="fas fa-trash"></i></button>
                   </div>
                 </div>
@@ -277,7 +287,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <td className="px-4 py-2 font-bold">{state.brands.find(b => b.id === t.brandId)?.name}</td>
                     <td className="px-4 py-2">{t.pattern}</td>
                     <td className="px-4 py-2 flex gap-4">
-                      <button onClick={() => { setNewTyre(t); setEditingTyreId(t.id); }} className="text-blue-600">Edit</button>
+                      <button onClick={() => { setNewTyre(t); setEditingTyreId(t.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-600">Edit</button>
                       <button onClick={() => deleteItem('tyres', t.id)} className="text-red-600">Delete</button>
                     </td>
                   </tr>
@@ -303,7 +313,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="p-4 flex justify-between items-center">
                     <span className="font-black uppercase">{v.make} {v.model}</span>
                     <div className="flex gap-2">
-                      <button onClick={() => { setNewVehicle(v); setEditingVehicleId(v.id); }} className="text-blue-600"><i className="fas fa-edit"></i></button>
+                      <button onClick={() => { setNewVehicle(v); setEditingVehicleId(v.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-600"><i className="fas fa-edit"></i></button>
                       <button onClick={() => deleteItem('vehicles', v.id)} className="text-red-600"><i className="fas fa-trash"></i></button>
                     </div>
                   </div>
@@ -328,7 +338,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <img src={s.image} className="w-16 h-16 rounded-xl object-cover" />
                   <div className="flex-grow font-black">{s.title}</div>
                   <div className="flex gap-4">
-                    <button onClick={() => { setNewService(s); setEditingServiceId(s.id); }} className="text-blue-600">Edit</button>
+                    <button onClick={() => { setNewService(s); setEditingServiceId(s.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-600">Edit</button>
                     <button onClick={() => deleteItem('services', s.id)} className="text-red-600">Delete</button>
                   </div>
                 </div>
@@ -339,6 +349,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {activeTab === 'settings' && (
           <div className="space-y-12">
+            <div className="bg-gray-50 p-8 rounded-3xl border-2 border-gray-200">
+              <h3 className="text-xl font-black mb-8 uppercase flex items-center gap-3">
+                <i className="fas fa-id-card text-gray-900"></i>
+                Business Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><label className={labelClass}>Business Name</label><input type="text" className={inputClass} value={editBusiness.name} onChange={e => setEditBusiness({...editBusiness, name: e.target.value})} /></div>
+                <div><label className={labelClass}>WhatsApp Number</label><input type="text" className={inputClass} value={editBusiness.whatsapp} onChange={e => setEditBusiness({...editBusiness, whatsapp: e.target.value})} placeholder="+92 300 1234567" /></div>
+                <div><label className={labelClass}>Phone Number</label><input type="text" className={inputClass} value={editBusiness.phone} onChange={e => setEditBusiness({...editBusiness, phone: e.target.value})} /></div>
+                <div><label className={labelClass}>Email Address</label><input type="email" className={inputClass} value={editBusiness.email} onChange={e => setEditBusiness({...editBusiness, email: e.target.value})} /></div>
+                <div className="md:col-span-2"><label className={labelClass}>Full Address</label><textarea className={inputClass} rows={2} value={editBusiness.address} onChange={e => setEditBusiness({...editBusiness, address: e.target.value})} /></div>
+              </div>
+              <button onClick={saveBusinessInfo} className="mt-8 bg-gray-900 text-white px-10 py-4 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl">Update Contact Details</button>
+            </div>
+
             <div className="bg-amber-50 p-8 rounded-3xl border-2 border-amber-200">
               <h3 className="text-xl font-black mb-4 uppercase">Database Backup (Crucial for 1500+ items)</h3>
               <p className="text-xs text-amber-700 font-bold mb-6 uppercase">Since the browser limit is 5MB, always export your data as a backup file. If you switch computers or clear history, simply import this file to restore everything.</p>
