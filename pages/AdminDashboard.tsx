@@ -65,22 +65,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  const pushToGlobalNetwork = () => {
-    // Encrypt current state into a base64 string for URL distribution
-    const data = btoa(JSON.stringify(state));
-    const url = `${window.location.origin}${window.location.pathname}?deploy=${data}`;
-    navigator.clipboard.writeText(url).then(() => {
-      alert("GLOBAL NETWORK PUSH SUCCESSFUL!\n\nYour entire Enterprise Database (Inventory, Prices, Themes) has been synchronized into a Distribution Link.\n\nOpen this link on any other device to sync it instantly.");
-    });
+  const handleLogout = () => {
+    setIsAdminAuthenticated(false);
+    onNavigate('dashboard');
   };
 
-  // Explicit Handlers (No more reduced lines - full functionality)
+  const pushToGlobalNetwork = () => {
+    try {
+      // Encrypt current state into a base64 string for URL distribution
+      const data = btoa(JSON.stringify(state));
+      const url = `${window.location.origin}${window.location.pathname}?deploy=${data}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert("GLOBAL NETWORK PUSH SUCCESSFUL!\n\nYour entire Enterprise Database (Inventory, Prices, Themes) has been synchronized into a Distribution Link.\n\nOpen this link on any other device (Mobile, Tablet, Desktop) to sync it instantly.");
+      });
+    } catch (e) {
+      alert("Error generating sync link. Data might be too large for URL distribution.");
+    }
+  };
+
+  // Explicit Handlers
   const saveBrand = () => {
     if (!brandForm.name) return;
     if (editingId) {
       updateState({ brands: state.brands.map(b => b.id === editingId ? { ...b, ...brandForm } as Brand : b) });
     } else {
-      updateState({ brands: [...state.brands, { ...brandForm, id: 'b' + Date.now() } as Brand] });
+      updateState({ brands: [...state.brands, { ...brandForm, id: 'b' + Date.now(), logo: brandForm.logo || 'https://picsum.photos/seed/brand/200/200', origin: brandForm.origin || 'Unknown' } as Brand] });
     }
     setBrandForm({}); setEditingId(null);
   };
@@ -90,7 +99,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (editingId) {
       updateState({ tyres: state.tyres.map(t => t.id === editingId ? { ...t, ...tyreForm } as Tyre : t) });
     } else {
-      updateState({ tyres: [...state.tyres, { ...tyreForm, id: 't' + Date.now() } as Tyre] });
+      updateState({ tyres: [...state.tyres, { ...tyreForm, id: 't' + Date.now(), price: Number(tyreForm.price) || 0, stock: Number(tyreForm.stock) || 0, image: tyreForm.image || 'https://picsum.photos/seed/tyre/400/300' } as Tyre] });
     }
     setTyreForm({}); setEditingId(null);
   };
@@ -100,7 +109,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (editingId) {
       updateState({ vehicles: state.vehicles.map(v => v.id === editingId ? { ...v, ...vehicleForm } as Vehicle : v) });
     } else {
-      updateState({ vehicles: [...state.vehicles, { ...vehicleForm, id: 'v' + Date.now() } as Vehicle] });
+      updateState({ vehicles: [...state.vehicles, { ...vehicleForm, id: 'v' + Date.now(), image: vehicleForm.image || 'https://picsum.photos/seed/car/400/300', recommendedSizes: vehicleForm.recommendedSizes || [] } as Vehicle] });
     }
     setVehicleForm({}); setEditingId(null);
   };
@@ -110,7 +119,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     if (editingId) {
       updateState({ services: state.services.map(s => s.id === editingId ? { ...s, ...serviceForm } as Service : s) });
     } else {
-      updateState({ services: [...state.services, { ...serviceForm, id: 's' + Date.now() } as Service] });
+      updateState({ services: [...state.services, { ...serviceForm, id: 's' + Date.now(), price: Number(serviceForm.price) || 0, image: serviceForm.image || 'https://picsum.photos/seed/service/400/300' } as Service] });
     }
     setServiceForm({}); setEditingId(null);
   };
@@ -168,6 +177,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {tab}
           </button>
         ))}
+        <button onClick={handleLogout} className="px-6 py-4 rounded-[2rem] text-[10px] font-black uppercase text-red-600 hover:bg-red-50">Logout</button>
       </div>
 
       <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm min-h-[500px]">
@@ -268,7 +278,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         )}
 
-        {/* VEHICLES & SERVICES Handlers (restored and explicit) */}
+        {/* VEHICLES & SERVICES Handlers */}
         {activeTab === 'vehicles' && (
            <div className="space-y-8">
             <div className={`p-8 rounded-[2rem] border-2 transition-all grid grid-cols-1 md:grid-cols-3 gap-6 items-end ${editingId ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-100'}`}>
