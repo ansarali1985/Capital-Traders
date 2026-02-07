@@ -17,26 +17,10 @@ import ContactUs from './pages/ContactUs';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => {
-    // 1. Check for Cloud Sync Parameter (Deployment)
-    const urlParams = new URLSearchParams(window.location.search);
-    const deployData = urlParams.get('deploy');
-    if (deployData) {
-      try {
-        const decoded = JSON.parse(atob(deployData));
-        localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(decoded));
-        // Strip the URL param to keep it clean and prevent loop reloads
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return decoded;
-      } catch (e) {
-        console.error("Cloud Sync: Encryption Key Invalid", e);
-      }
-    }
-
-    // 2. Local State Persistence
+    // Check LocalStorage first for the last used state
     const saved = localStorage.getItem('capital_traders_enterprise_state');
     if (saved) return JSON.parse(saved);
 
-    // 3. System Defaults
     return {
       brands: INITIAL_BRANDS,
       tyres: INITIAL_TYRES,
@@ -53,8 +37,37 @@ const App: React.FC = () => {
 
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<{ page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string }>({ page: 'dashboard' });
+  const [isCloudSynced, setIsCloudSynced] = useState(false);
 
-  // Real-time local persistence
+  // CLOUD SYNC ENGINE: Pull latest data from public hub
+  const fetchCloudState = useCallback(async (syncId: string) => {
+    try {
+      const response = await fetch(`https://api.npoint.io/${syncId}`);
+      if (response.ok) {
+        const cloudData = await response.json();
+        setState(cloudData);
+        setIsCloudSynced(true);
+        localStorage.setItem('capital_traders_cloud_id', syncId);
+        localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(cloudData));
+      }
+    } catch (error) {
+      console.error("Cloud Sync Error:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const syncId = urlParams.get('sync') || localStorage.getItem('capital_traders_cloud_id');
+    
+    if (syncId) {
+      fetchCloudState(syncId);
+      // Auto-refresh cloud data every 60 seconds to simulate real-time updates across browsers
+      const interval = setInterval(() => fetchCloudState(syncId), 60000);
+      return () => clearInterval(interval);
+    }
+  }, [fetchCloudState]);
+
+  // Persist locally
   useEffect(() => {
     localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(state));
   }, [state]);
@@ -77,6 +90,7 @@ const App: React.FC = () => {
         onNavigate={navigate} 
         themeClass={currentTheme.classes}
         isAdminAuthenticated={isAdminAuthenticated}
+        isCloudSynced={isCloudSynced}
       />
       
       <main className="flex-grow">
@@ -114,7 +128,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-gray-900 text-white py-12 mt-20">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-10 border-b border-white/5 pb-10">
              <div className="text-center md:text-left">
@@ -123,19 +137,15 @@ const App: React.FC = () => {
              </div>
              <div className="flex flex-wrap justify-center gap-10">
                 <div className="text-center md:text-left">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Hotline</p>
-                  <a href={`tel:${state.businessInfo.phone}`} className="hover:text-amber-400 transition-all font-bold">{state.businessInfo.phone}</a>
-                </div>
-                <div className="text-center md:text-left">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Global Sync</p>
-                  <span className="flex items-center gap-2 text-xs font-bold text-blue-400">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                    Operational
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Sync Status</p>
+                  <span className={`flex items-center gap-2 text-xs font-bold ${isCloudSynced ? 'text-green-400' : 'text-amber-400'}`}>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${isCloudSynced ? 'bg-green-400' : 'bg-amber-400'}`}></div>
+                    {isCloudSynced ? 'Live Enterprise Sync' : 'Local Only'}
                   </span>
                 </div>
              </div>
           </div>
-          <p className="text-center text-gray-600 text-[10px] font-black uppercase tracking-widest">&copy; {new Date().getFullYear()} Capital Traders Enterprise. Synchronized via Global Net.</p>
+          <p className="text-center text-gray-600 text-[10px] font-black uppercase tracking-widest">&copy; {new Date().getFullYear()} Capital Traders. Real-time Enterprise Dashboard.</p>
         </div>
       </footer>
     </div>
