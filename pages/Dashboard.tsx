@@ -194,7 +194,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
           </div>
         ) : null}
 
-        {/* Brands Grid - RESIZED TO MATCH SERVICES */}
+        {/* Brands Grid - RESIZED TO EXACTLY MATCH SERVICES */}
         <section id="brands" className="mb-20">
           <div className="flex items-center gap-4 mb-10">
             <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">Premium Brands</h2>
@@ -207,6 +207,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                 onClick={() => onNavigate('brand', brand.id)}
                 className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col"
               >
+                {/* MATCHING h-44 FROM SERVICES */}
                 <div className="h-44 bg-gray-50 flex items-center justify-center p-8 group-hover:bg-white transition-colors">
                   <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                 </div>
