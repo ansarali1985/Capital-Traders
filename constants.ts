@@ -45,8 +45,8 @@ export const INITIAL_SERVICES: Service[] = [
 
 export const INITIAL_BUSINESS: BusinessInfo = {
   name: 'CAPITAL TRADERS',
-  address: 'Plot #12, Sector I-10/3, Industrial Area, Islamabad, Pakistan',
+  address: 'Industrial Area, Islamabad, Pakistan',
   phone: '+92 51 1234567',
   email: 'info@capitaltraders.pk',
-  whatsapp: '+92 300 1234567',
+  whatsapp: '0300 1234567',
 };
