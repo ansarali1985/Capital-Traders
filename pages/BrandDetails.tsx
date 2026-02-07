@@ -15,23 +15,22 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
   if (!brand) return <div className="p-20 text-center font-bold">Brand not found</div>;
 
   const handleWhatsAppInquiry = (tyre: any) => {
-    // Better Pakistan Number Formatting
+    // Standardize number for WhatsApp API
     let cleanNumber = state.businessInfo.whatsapp.replace(/\D/g, '');
     if (cleanNumber.startsWith('0')) {
       cleanNumber = '92' + cleanNumber.substring(1);
-    }
-    if (!cleanNumber.startsWith('92')) {
+    } else if (!cleanNumber.startsWith('92')) {
       cleanNumber = '92' + cleanNumber;
     }
 
     const message = encodeURIComponent(
       `Assalam-o-Alaikum ${state.businessInfo.name},\n\n` +
-      `I saw this on your website:\n\n` +
-      `📦 *Brand:* ${brand.name}\n` +
-      `🔄 *Pattern:* ${tyre.pattern}\n` +
+      `I am inquiring about the following tyre from your website:\n\n` +
+      `🏢 *Brand:* ${brand.name}\n` +
+      `🌀 *Pattern:* ${tyre.pattern}\n` +
       `📐 *Size:* ${tyre.size}\n` +
       `💰 *Price:* Rs. ${tyre.price.toLocaleString()}\n\n` +
-      `Is this available for fitting?`
+      `Please confirm availability.`
     );
     window.open(`https://wa.me/${cleanNumber}?text=${message}`, '_blank');
   };
@@ -51,14 +50,14 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
         </div>
         <div className="text-center md:text-left">
           <h1 className="text-5xl font-black text-gray-900 mb-2 uppercase tracking-tighter">{brand.name}</h1>
-          <p className="text-xl text-gray-400 font-bold mb-6">Imported from {brand.origin}</p>
+          <p className="text-xl text-gray-400 font-bold mb-6">Origin: {brand.origin}</p>
           <div className="flex flex-wrap justify-center md:justify-start gap-4">
             <div className="bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100">
-              <span className="block text-[10px] font-black text-blue-400 uppercase tracking-widest">Patterns</span>
+              <span className="block text-[10px] font-black text-blue-400 uppercase tracking-widest">Available Patterns</span>
               <span className="text-2xl font-black text-blue-700">{new Set(tyres.map(t => t.pattern)).size}</span>
             </div>
             <div className="bg-amber-50 px-6 py-3 rounded-2xl border border-amber-100">
-              <span className="block text-[10px] font-black text-amber-400 uppercase tracking-widest">Inventory</span>
+              <span className="block text-[10px] font-black text-amber-400 uppercase tracking-widest">Total Variations</span>
               <span className="text-2xl font-black text-amber-700">{tyres.length} Sizes</span>
             </div>
           </div>
@@ -72,7 +71,7 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
           {tyres.map(tyre => (
             <div key={tyre.id} className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all group">
               <div className="h-56 overflow-hidden relative bg-gray-50">
-                <img src={tyre.image} alt={tyre.pattern} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <img src={tyre.image || 'https://picsum.photos/seed/tyre/400/300'} alt={tyre.pattern} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               </div>
               <div className="p-6">
                 <h3 className="text-lg font-black text-gray-900 mb-1 uppercase tracking-tight">{tyre.pattern}</h3>
@@ -80,14 +79,14 @@ const BrandDetails: React.FC<BrandDetailsProps> = ({ brandId, state, onNavigate 
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-2xl font-black text-gray-900">Rs. {tyre.price.toLocaleString()}</span>
                   <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${tyre.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {tyre.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                    {tyre.stock > 0 ? `In Stock (${tyre.stock})` : 'Out of Stock'}
                   </span>
                 </div>
                 <button 
                   onClick={() => handleWhatsAppInquiry(tyre)}
                   className="w-full bg-green-600 text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
                 >
-                  <i className="fab fa-whatsapp text-lg"></i> WhatsApp Inquiry
+                  <i className="fab fa-whatsapp text-lg"></i> Send Inquiry
                 </button>
               </div>
             </div>
