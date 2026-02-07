@@ -40,7 +40,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
 
   return (
     <div className="animate-fadeIn">
-      {/* Running Banner of Vehicles - Full Colour & Permanent Names */}
+      {/* Running Banner of Vehicles */}
       <div className="bg-black py-4 overflow-hidden border-b border-white/10 relative">
         <div className="flex animate-marquee whitespace-nowrap items-center">
           {[...state.vehicles, ...state.vehicles, ...state.vehicles].map((vehicle, idx) => (
@@ -54,7 +54,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                 className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110" 
                 alt={vehicle.model} 
               />
-              {/* Permanent Gradient Overlay for Names */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-4">
                 <div className="transform transition-transform duration-300 group-hover:-translate-y-1">
                   <p className="text-white font-black text-sm uppercase tracking-tighter leading-none">{vehicle.make}</p>
@@ -85,8 +84,8 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
       <section id="search-section" className={`bg-gradient-to-br ${themeColor} py-16 md:py-24 text-white relative overflow-hidden`}>
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <h1 className="text-4xl md:text-7xl font-black mb-6 leading-tight tracking-tighter">
-            CAPITAL <span className="text-amber-400">TRADERS</span>
+          <h1 className="text-4xl md:text-7xl font-black mb-6 leading-tight tracking-tighter uppercase">
+            {state.businessInfo.name.split(' ')[0]} <span className="text-amber-400">{state.businessInfo.name.split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-lg md:text-2xl mb-12 opacity-90 font-medium max-w-3xl mx-auto">
             Authorized Retailers of Premium Global Tyre Brands in Islamabad.
@@ -195,24 +194,26 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
           </div>
         ) : null}
 
-        {/* Brands Grid */}
+        {/* Brands Grid - RESIZED TO MATCH SERVICES */}
         <section id="brands" className="mb-20">
           <div className="flex items-center gap-4 mb-10">
             <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">Premium Brands</h2>
             <div className="flex-grow h-px bg-gray-200"></div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {filteredBrands.map(brand => (
               <div 
                 key={brand.id}
                 onClick={() => onNavigate('brand', brand.id)}
-                className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group text-center"
+                className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col"
               >
-                <div className="w-full aspect-square mb-6 rounded-2xl overflow-hidden bg-gray-50 p-4 group-hover:bg-white transition-colors flex items-center justify-center">
-                  <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain" />
+                <div className="h-44 bg-gray-50 flex items-center justify-center p-8 group-hover:bg-white transition-colors">
+                  <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                <h3 className="font-black text-gray-900 uppercase text-sm tracking-widest">{brand.name}</h3>
-                <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-widest">{brand.origin}</p>
+                <div className="p-6 border-t border-gray-50 text-center">
+                  <h3 className="font-black text-gray-900 uppercase text-sm tracking-widest">{brand.name}</h3>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase mt-1 tracking-widest">{brand.origin}</p>
+                </div>
               </div>
             ))}
           </div>
