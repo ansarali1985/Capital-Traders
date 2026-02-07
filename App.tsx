@@ -17,26 +17,26 @@ import ContactUs from './pages/ContactUs';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(() => {
-    // 1. Check if we have a deployment key in the URL (for syncing browsers)
+    // 1. Check for Cloud Sync Parameter (Deployment)
     const urlParams = new URLSearchParams(window.location.search);
     const deployData = urlParams.get('deploy');
     if (deployData) {
       try {
         const decoded = JSON.parse(atob(deployData));
-        localStorage.setItem('capital_traders_state', JSON.stringify(decoded));
-        // Remove the param from URL to keep it clean
+        localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(decoded));
+        // Strip the URL param to keep it clean and prevent loop reloads
         window.history.replaceState({}, document.title, window.location.pathname);
         return decoded;
       } catch (e) {
-        console.error("Failed to decode deployment link", e);
+        console.error("Cloud Sync: Encryption Key Invalid", e);
       }
     }
 
-    // 2. Fallback to Local Storage
-    const saved = localStorage.getItem('capital_traders_state');
+    // 2. Local State Persistence
+    const saved = localStorage.getItem('capital_traders_enterprise_state');
     if (saved) return JSON.parse(saved);
 
-    // 3. Fallback to Defaults
+    // 3. System Defaults
     return {
       brands: INITIAL_BRANDS,
       tyres: INITIAL_TYRES,
@@ -54,8 +54,9 @@ const App: React.FC = () => {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<{ page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string }>({ page: 'dashboard' });
 
+  // Real-time local persistence
   useEffect(() => {
-    localStorage.setItem('capital_traders_state', JSON.stringify(state));
+    localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(state));
   }, [state]);
 
   const updateState = useCallback((updates: Partial<AppState>) => {
@@ -64,13 +65,13 @@ const App: React.FC = () => {
 
   const navigate = (page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string) => {
     setCurrentView({ page, id });
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const currentTheme = THEMES.find(t => t.id === state.theme) || THEMES[0];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50 selection:bg-gray-900 selection:text-white">
       <Navbar 
         businessName={state.businessInfo.name} 
         onNavigate={navigate} 
@@ -113,27 +114,28 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-gray-900 text-white py-8 mt-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="font-bold text-xl mb-2">{state.businessInfo.name}</p>
-          <p className="text-gray-400 text-sm mb-4">{state.businessInfo.address}</p>
-          <div className="flex flex-wrap justify-center gap-6 mb-6">
-            <a href={`tel:${state.businessInfo.phone}`} className="hover:text-blue-400 transition-colors">
-              <i className="fas fa-phone mr-2"></i> {state.businessInfo.phone}
-            </a>
-            <a href={`https://wa.me/${state.businessInfo.whatsapp.replace(/\D/g, '').startsWith('0') ? '92' + state.businessInfo.whatsapp.replace(/\D/g, '').slice(1) : state.businessInfo.whatsapp.replace(/\D/g, '')}`} className="hover:text-green-400 transition-colors">
-              <i className="fab fa-whatsapp mr-2"></i> WhatsApp
-            </a>
+      <footer className="bg-gray-900 text-white py-12 mt-20">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-10 border-b border-white/5 pb-10">
+             <div className="text-center md:text-left">
+                <p className="font-black text-2xl tracking-tighter uppercase mb-2">{state.businessInfo.name}</p>
+                <p className="text-gray-500 text-sm max-w-xs">{state.businessInfo.address}</p>
+             </div>
+             <div className="flex flex-wrap justify-center gap-10">
+                <div className="text-center md:text-left">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Hotline</p>
+                  <a href={`tel:${state.businessInfo.phone}`} className="hover:text-amber-400 transition-all font-bold">{state.businessInfo.phone}</a>
+                </div>
+                <div className="text-center md:text-left">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Global Sync</p>
+                  <span className="flex items-center gap-2 text-xs font-bold text-blue-400">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    Operational
+                  </span>
+                </div>
+             </div>
           </div>
-          {isAdminAuthenticated && (
-            <button 
-              onClick={() => navigate('admin')}
-              className="text-amber-400 text-xs font-bold uppercase tracking-widest hover:underline mb-4 block mx-auto"
-            >
-              Admin Dashboard
-            </button>
-          )}
-          <p className="text-gray-500 text-xs">&copy; {new Date().getFullYear()} Capital Traders. All rights reserved.</p>
+          <p className="text-center text-gray-600 text-[10px] font-black uppercase tracking-widest">&copy; {new Date().getFullYear()} Capital Traders Enterprise. Synchronized via Global Net.</p>
         </div>
       </footer>
     </div>
