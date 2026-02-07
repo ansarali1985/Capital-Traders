@@ -4,17 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capital Traders - Premium Tyres</title>
+    <title>Capital Traders - Enterprise Tyre Solutions</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
       body {
         font-family: 'Inter', sans-serif;
+        background-color: #f9fafb;
       }
-      .admin-transition {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out forwards;
       }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      /* Custom scrollbar for premium feel */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 <script type="importmap">
 {
@@ -25,10 +35,8 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>
