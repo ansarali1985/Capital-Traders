@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppState, Brand, Tyre, Vehicle, Service, BusinessInfo, AppTheme } from '../types';
-import { THEMES } from '../constants';
-import Logo from '../components/Logo';
+import { AppState, Brand, Tyre, Vehicle, Service, BusinessInfo, AppTheme } from '../types.ts';
+import { THEMES } from '../constants.ts';
+import Logo from '../components/Logo.tsx';
 
 interface AdminDashboardProps {
   state: AppState;
@@ -56,8 +56,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const pushToCloud = async () => {
     setIsSyncing(true);
     try {
-      // Logic for Cloud Hub Synchronization
-      // We always create a new one to ensure fresh IDs if the old ones expire
       const response = await fetch('https://api.npoint.io/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,7 +90,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
   };
 
-  // Handlers
   const saveBrand = () => {
     if (!brandForm.name) return;
     if (editingId) {
