@@ -1,197 +1,48 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  INITIAL_BRANDS, 
-  INITIAL_TYRES, 
-  INITIAL_VEHICLES, 
-  INITIAL_SERVICES, 
-  INITIAL_BUSINESS, 
-  THEMES 
-} from './constants.ts';
-import { AppState, AppTheme } from './types.ts';
-import Navbar from './components/Navbar.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import BrandDetails from './pages/BrandDetails.tsx';
-import AdminDashboard from './pages/AdminDashboard.tsx';
-import ContactUs from './pages/ContactUs.tsx';
+import { Brand, Vehicle, Service, BusinessInfo, Tyre, AppTheme } from './types.ts';
 
-const DEFAULT_STATE: AppState = {
-  brands: INITIAL_BRANDS,
-  tyres: INITIAL_TYRES,
-  vehicles: INITIAL_VEHICLES,
-  services: INITIAL_SERVICES,
-  businessInfo: INITIAL_BUSINESS,
-  adminCredentials: {
-    username: 'Abid_Abbas',
-    password: 'Capitaltraders@123'
-  },
-  theme: 'classic' as AppTheme,
+export const THEMES: { id: AppTheme; name: string; classes: string }[] = [
+  { id: 'classic', name: 'Classic Blue', classes: 'from-blue-600 to-blue-800' },
+  { id: 'dark', name: 'Stealth Black', classes: 'from-gray-800 to-black' },
+  { id: 'industrial', name: 'Industrial Amber', classes: 'from-amber-600 to-amber-800' },
+  { id: 'modern-red', name: 'Racing Red', classes: 'from-red-600 to-red-800' },
+  { id: 'emerald', name: 'Emerald Green', classes: 'from-emerald-600 to-emerald-800' },
+  { id: 'midnight', name: 'Midnight Purple', classes: 'from-indigo-800 to-purple-900' },
+  { id: 'sunset', name: 'Sunset Orange', classes: 'from-orange-500 to-pink-600' },
+  { id: 'ocean', name: 'Deep Ocean', classes: 'from-cyan-600 to-blue-900' },
+];
+
+export const INITIAL_BRANDS: Brand[] = [
+  { id: 'b1', name: 'Bridgestone', origin: 'Japan', logo: 'https://picsum.photos/seed/bridge/200/200' },
+  { id: 'b2', name: 'Michelin', origin: 'France', logo: 'https://picsum.photos/seed/mich/200/200' },
+  { id: 'b3', name: 'Yokohama', origin: 'Japan', logo: 'https://picsum.photos/seed/yoko/200/200' },
+  { id: 'b4', name: 'Dunlop', origin: 'UK', logo: 'https://picsum.photos/seed/dun/200/200' },
+  { id: 'b5', name: 'Continental', origin: 'Germany', logo: 'https://picsum.photos/seed/cont/200/200' },
+  { id: 'b6', name: 'General Tyre', origin: 'Pakistan', logo: 'https://picsum.photos/seed/gen/200/200' },
+];
+
+export const INITIAL_TYRES: Tyre[] = [
+  { id: 't1', brandId: 'b1', pattern: 'Ecopia EP150', size: '195/65/R15', price: 18500, stock: 24, image: 'https://picsum.photos/seed/t1/400/300' },
+  { id: 't2', brandId: 'b3', pattern: 'Advan DB V122', size: '185/65/R15', price: 21000, stock: 12, image: 'https://picsum.photos/seed/t2/400/300' },
+  { id: 't3', brandId: 'b6', pattern: 'Euro Star', size: '175/70/R13', price: 9500, stock: 40, image: 'https://picsum.photos/seed/t3/400/300' },
+];
+
+export const INITIAL_VEHICLES: Vehicle[] = [
+  { id: 'v1', make: 'Toyota', model: 'Corolla', yearRange: '2014-2023', recommendedSizes: ['195/65/R15', '205/55/R16'], image: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&w=400&q=80' },
+  { id: 'v2', make: 'Honda', model: 'Civic', yearRange: '2016-2024', recommendedSizes: ['215/55/R16', '215/50/R17'], image: 'https://images.unsplash.com/photo-1594070319944-7c0c63146b7a?auto=format&fit=crop&w=400&q=80' },
+  { id: 'v3', make: 'Suzuki', model: 'Alto', yearRange: '2019-2024', recommendedSizes: ['145/80/R13', '155/70/R13'], image: 'https://images.unsplash.com/photo-1631557993077-ec07073b88cc?auto=format&fit=crop&w=400&q=80' },
+];
+
+export const INITIAL_SERVICES: Service[] = [
+  { id: 's1', title: 'Wheel Alignment', description: 'Precision 3D computerised wheel alignment for maximum tyre life.', price: 1500, image: 'https://picsum.photos/seed/align/400/300' },
+  { id: 's2', title: 'Nitrogen Filling', description: 'Stay cool and maintain pressure longer with high-purity nitrogen.', price: 500, image: 'https://picsum.photos/seed/nitro/400/300' },
+  { id: 's3', title: 'Tyre Repair', description: 'Professional puncture repair and sidewall inspection.', price: 300, image: 'https://picsum.photos/seed/repair/400/300' },
+];
+
+export const INITIAL_BUSINESS: BusinessInfo = {
+  name: 'CAPITAL TRADERS',
+  address: 'Industrial Area, Islamabad, Pakistan',
+  phone: '+92 51 1234567',
+  email: 'info@capitaltraders.pk',
+  whatsapp: '0300 1234567',
 };
-
-const App: React.FC = () => {
-  const [state, setState] = useState<AppState>(DEFAULT_STATE);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<{ page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string }>({ page: 'dashboard' });
-  const [isCloudSynced, setIsCloudSynced] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const validateState = (data: any): data is AppState => {
-    return data && 
-           Array.isArray(data.brands) && 
-           Array.isArray(data.tyres) && 
-           typeof data.businessInfo === 'object';
-  };
-
-  const fetchCloudState = useCallback(async (syncId: string) => {
-    if (!syncId || syncId === 'undefined') return;
-    try {
-      const response = await fetch(`https://api.npoint.io/${syncId}`);
-      if (response.ok) {
-        const cloudData = await response.json();
-        if (validateState(cloudData)) {
-          setState(prev => ({ ...prev, ...cloudData }));
-          setIsCloudSynced(true);
-          localStorage.setItem('capital_traders_cloud_id', syncId);
-        }
-      }
-    } catch (error) {
-      console.error("Cloud Sync Fetch Failed:", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    const hydrate = async () => {
-      try {
-        const saved = localStorage.getItem('capital_traders_enterprise_state');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (validateState(parsed)) {
-            setState(prev => ({ ...prev, ...parsed }));
-          }
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const syncId = urlParams.get('sync') || localStorage.getItem('capital_traders_cloud_id');
-        
-        if (syncId) {
-          await fetchCloudState(syncId);
-          const interval = setInterval(() => fetchCloudState(syncId), 60000);
-          return () => clearInterval(interval);
-        }
-      } catch (e) {
-        console.error("Hydration Failed:", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    hydrate();
-  }, [fetchCloudState]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(state));
-    }
-  }, [state, isLoading]);
-
-  const updateState = useCallback((updates: Partial<AppState>) => {
-    setState(prev => ({ ...prev, ...updates }));
-  }, []);
-
-  const navigate = (page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string) => {
-    setCurrentView({ page, id });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleReset = () => {
-    if (confirm("This will clear all local changes and reset to factory defaults. Continue?")) {
-      localStorage.removeItem('capital_traders_enterprise_state');
-      localStorage.removeItem('capital_traders_cloud_id');
-      window.location.href = window.location.pathname;
-    }
-  };
-
-  const currentTheme = THEMES.find(t => t.id === (state?.theme || 'classic')) || THEMES[0];
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-50">
-        <div className="w-16 h-16 border-4 border-gray-900 border-t-amber-400 rounded-full animate-spin mb-4"></div>
-        <p className="font-black text-[10px] uppercase tracking-widest text-gray-400">Booting Enterprise Engine...</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50 selection:bg-gray-900 selection:text-white">
-      <Navbar 
-        businessName={state?.businessInfo?.name || 'CAPITAL TRADERS'} 
-        onNavigate={navigate} 
-        themeClass={currentTheme.classes}
-        isAdminAuthenticated={isAdminAuthenticated}
-        isCloudSynced={isCloudSynced}
-      />
-      
-      <main className="flex-grow">
-        {currentView.page === 'dashboard' && (
-          <Dashboard 
-            state={state} 
-            onNavigate={navigate} 
-            themeColor={currentTheme.classes}
-          />
-        )}
-        
-        {currentView.page === 'brand' && currentView.id && (
-          <BrandDetails 
-            brandId={currentView.id} 
-            state={state} 
-            onNavigate={navigate}
-          />
-        )}
-
-        {currentView.page === 'admin' && (
-          <AdminDashboard 
-            state={state} 
-            updateState={updateState} 
-            onNavigate={navigate}
-            isAdminAuthenticated={isAdminAuthenticated}
-            setIsAdminAuthenticated={setIsAdminAuthenticated}
-          />
-        )}
-
-        {currentView.page === 'contact' && (
-          <ContactUs 
-            businessInfo={state.businessInfo} 
-            themeColor={currentTheme.classes}
-          />
-        )}
-      </main>
-
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-10 border-b border-white/5 pb-10">
-             <div className="text-center md:text-left">
-                <p className="font-black text-2xl tracking-tighter uppercase mb-2">{state?.businessInfo?.name}</p>
-                <p className="text-gray-500 text-sm max-w-xs">{state?.businessInfo?.address}</p>
-             </div>
-             <div className="flex flex-wrap justify-center gap-10">
-                <div className="text-center md:text-left">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Enterprise Status</p>
-                  <span className={`flex items-center gap-2 text-xs font-bold ${isCloudSynced ? 'text-green-400' : 'text-amber-400'}`}>
-                    <div className={`w-2 h-2 rounded-full animate-pulse ${isCloudSynced ? 'bg-green-400' : 'bg-amber-400'}`}></div>
-                    {isCloudSynced ? 'Sync Active' : 'Standalone'}
-                  </span>
-                </div>
-                <div className="text-center md:text-left">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">Recovery</p>
-                  <button onClick={handleReset} className="text-[9px] font-black uppercase text-red-500 hover:text-red-400 transition-colors">Clear Cache & Reset</button>
-                </div>
-             </div>
-          </div>
-          <p className="text-center text-gray-600 text-[10px] font-black uppercase tracking-widest">&copy; {new Date().getFullYear()} Capital Traders Enterprise. All Rights Reserved.</p>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default App;
