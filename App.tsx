@@ -7,13 +7,13 @@ import {
   INITIAL_SERVICES, 
   INITIAL_BUSINESS, 
   THEMES 
-} from './constants';
-import { AppState, AppTheme } from './types';
-import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
-import BrandDetails from './pages/BrandDetails';
-import AdminDashboard from './pages/AdminDashboard';
-import ContactUs from './pages/ContactUs';
+} from './constants.ts';
+import { AppState, AppTheme } from './types.ts';
+import Navbar from './components/Navbar.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import BrandDetails from './pages/BrandDetails.tsx';
+import AdminDashboard from './pages/AdminDashboard.tsx';
+import ContactUs from './pages/ContactUs.tsx';
 
 const DEFAULT_STATE: AppState = {
   brands: INITIAL_BRANDS,
@@ -29,14 +29,12 @@ const DEFAULT_STATE: AppState = {
 };
 
 const App: React.FC = () => {
-  // Always start with valid default state to prevent white screen crashes
   const [state, setState] = useState<AppState>(DEFAULT_STATE);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<{ page: 'dashboard' | 'brand' | 'admin' | 'contact', id?: string }>({ page: 'dashboard' });
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Validation function to ensure state structure is healthy
   const validateState = (data: any): data is AppState => {
     return data && 
            Array.isArray(data.brands) && 
@@ -61,11 +59,9 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Initialize and Hydrate
   useEffect(() => {
     const hydrate = async () => {
       try {
-        // 1. Load Local Storage
         const saved = localStorage.getItem('capital_traders_enterprise_state');
         if (saved) {
           const parsed = JSON.parse(saved);
@@ -74,13 +70,11 @@ const App: React.FC = () => {
           }
         }
 
-        // 2. Check URL or Saved Sync ID
         const urlParams = new URLSearchParams(window.location.search);
         const syncId = urlParams.get('sync') || localStorage.getItem('capital_traders_cloud_id');
         
         if (syncId) {
           await fetchCloudState(syncId);
-          // Set up polling
           const interval = setInterval(() => fetchCloudState(syncId), 60000);
           return () => clearInterval(interval);
         }
@@ -93,7 +87,6 @@ const App: React.FC = () => {
     hydrate();
   }, [fetchCloudState]);
 
-  // Persistent Local Saving
   useEffect(() => {
     if (!isLoading) {
       localStorage.setItem('capital_traders_enterprise_state', JSON.stringify(state));
@@ -113,7 +106,7 @@ const App: React.FC = () => {
     if (confirm("This will clear all local changes and reset to factory defaults. Continue?")) {
       localStorage.removeItem('capital_traders_enterprise_state');
       localStorage.removeItem('capital_traders_cloud_id');
-      window.location.href = window.location.pathname; // Reload to clear memory
+      window.location.href = window.location.pathname;
     }
   };
 
