@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { BusinessInfo } from '../types';
+import { BusinessInfo } from '../types.ts';
 
 interface ContactUsProps {
   businessInfo: BusinessInfo;
@@ -22,7 +22,6 @@ const ContactUs: React.FC<ContactUsProps> = ({ businessInfo, themeColor }) => {
       return;
     }
 
-    // Fixed Pakistan Number Cleaning Logic
     let cleanNumber = businessInfo.whatsapp.replace(/\D/g, '');
     if (cleanNumber.startsWith('0')) {
       cleanNumber = '92' + cleanNumber.substring(1);
