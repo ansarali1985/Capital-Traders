@@ -71,18 +71,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
             </div>
           ))}
         </div>
-        <style>{`
-          @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-33.33%); }
-          }
-          .animate-marquee {
-            animation: marquee 50s linear infinite;
-          }
-          .animate-marquee:hover {
-            animation-play-state: paused;
-          }
-        `}</style>
       </div>
 
       {/* Hero & Search Section */}
@@ -131,9 +119,56 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
         </div>
       </section>
 
-      {/* Content grid removed for brevity as per existing code structure */}
       <div className="container mx-auto px-4 py-12">
-        {/* Simplified results section for performance */}
+        {/* Search Results */}
+        {searchTerm && (searchType === 'vehicle' || searchType === 'size') && (
+           <div className="mb-16">
+             <h2 className="text-2xl font-black mb-8 flex items-center uppercase tracking-tight">
+               <span className="w-8 h-1 bg-amber-400 mr-3"></span>
+               Search Results for "{searchTerm}"
+             </h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+               {searchType === 'vehicle' && filteredVehicles.map(v => (
+                 <div key={v.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                   <h3 className="font-black uppercase text-lg">{v.make} {v.model}</h3>
+                   <div className="flex flex-wrap gap-2 mt-4">
+                     {v.recommendedSizes.map(size => (
+                       <button 
+                         key={size}
+                         onClick={() => {setSearchType('size'); setSearchTerm(size);}}
+                         className="px-3 py-1 bg-gray-100 rounded-lg text-[10px] font-black hover:bg-gray-900 hover:text-white transition-all"
+                       >
+                         {size}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
+               ))}
+               {searchType === 'size' && filteredTyres.map(t => (
+                  <div key={t.id} className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all">
+                    <div className="h-48 overflow-hidden relative">
+                      <img src={t.image} alt={t.pattern} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-black uppercase text-gray-900 shadow-lg">
+                        {brands.find(b => b.id === t.brandId)?.name}
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="font-black text-gray-900 text-lg uppercase tracking-tight">{t.pattern}</h3>
+                      <p className="text-gray-400 font-bold mb-4">{t.size}</p>
+                      <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                        <span className="text-gray-900 font-black text-xl">Rs. {t.price.toLocaleString()}</span>
+                        <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${t.stock > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                          {t.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+               ))}
+             </div>
+           </div>
+        )}
+
+        {/* Brands Grid */}
         <section id="brands" className="mb-20">
           <div className="flex items-center gap-4 mb-10">
             <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">Premium Brands</h2>
@@ -155,6 +190,49 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Services Showcase */}
+        <section className="mb-20">
+          <div className="text-center mb-16">
+            <p className="text-amber-500 font-black uppercase tracking-[0.3em] text-xs mb-4">Complete Solutions</p>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter">Expert Auto Services</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
+            {services.map(service => (
+              <div key={service.id} className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden group hover:border-gray-900 transition-all flex flex-col">
+                <div className="h-56 overflow-hidden relative">
+                  <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all"></div>
+                </div>
+                <div className="p-8 flex-grow flex flex-col">
+                  <h3 className="font-black text-gray-900 text-2xl uppercase tracking-tight mb-4">{service.title}</h3>
+                  <p className="text-sm text-gray-500 font-medium leading-relaxed mb-8 flex-grow">{service.description}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-black text-gray-900 bg-gray-100 px-4 py-2 rounded-xl">Rs. {service.price.toLocaleString()}</span>
+                    <button onClick={() => onNavigate('contact')} className="text-amber-600 font-black uppercase tracking-widest hover:text-amber-700 text-xs">Book Appointment <i className="fas fa-chevron-right ml-1"></i></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CTA Banner */}
+        <section className={`rounded-[3rem] bg-gradient-to-r ${themeColor} p-10 md:p-20 text-white relative overflow-hidden shadow-2xl`}>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+            <div className="max-w-2xl">
+              <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter leading-none">NEED A CUSTOM <br/> QUOTATION?</h2>
+              <p className="text-lg md:text-xl opacity-80 font-medium">Contact our specialists today for bulk orders or specific vehicle requirements.</p>
+            </div>
+            <button 
+              onClick={() => onNavigate('contact')}
+              className="bg-white text-gray-900 px-12 py-5 rounded-2xl font-black text-lg uppercase tracking-tighter shadow-xl hover:scale-105 transition-all w-full md:w-auto"
+            >
+              Get Expert Advice
+            </button>
           </div>
         </section>
       </div>
