@@ -12,22 +12,27 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchType, setSearchType] = useState<'brand' | 'size' | 'vehicle'>('brand');
 
+  const brands = state?.brands || [];
+  const vehicles = state?.vehicles || [];
+  const tyres = state?.tyres || [];
+  const services = state?.services || [];
+
   const filteredBrands = useMemo(() => {
-    if (searchType !== 'brand') return state.brands;
-    return state.brands.filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [state.brands, searchTerm, searchType]);
+    if (searchType !== 'brand') return brands;
+    return brands.filter(b => b.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [brands, searchTerm, searchType]);
 
   const filteredVehicles = useMemo(() => {
     if (searchType !== 'vehicle') return [];
-    return state.vehicles.filter(v => 
+    return vehicles.filter(v => 
       `${v.make} ${v.model}`.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [state.vehicles, searchTerm, searchType]);
+  }, [vehicles, searchTerm, searchType]);
 
   const filteredTyres = useMemo(() => {
     if (searchType !== 'size') return [];
-    return state.tyres.filter(t => t.size.includes(searchTerm));
-  }, [state.tyres, searchTerm, searchType]);
+    return tyres.filter(t => t.size.includes(searchTerm));
+  }, [tyres, searchTerm, searchType]);
 
   const handleBannerClick = (vehicle: Vehicle) => {
     setSearchType('vehicle');
@@ -43,7 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
       {/* Running Banner of Vehicles */}
       <div className="bg-black py-4 overflow-hidden border-b border-white/10 relative">
         <div className="flex animate-marquee whitespace-nowrap items-center">
-          {[...state.vehicles, ...state.vehicles, ...state.vehicles].map((vehicle, idx) => (
+          {(vehicles.length > 0 ? [...vehicles, ...vehicles, ...vehicles] : []).map((vehicle, idx) => (
             <div 
               key={idx} 
               onClick={() => handleBannerClick(vehicle)}
@@ -85,7 +90,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
         <div className="container mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-7xl font-black mb-6 leading-tight tracking-tighter uppercase">
-            {state.businessInfo.name.split(' ')[0]} <span className="text-amber-400">{state.businessInfo.name.split(' ').slice(1).join(' ')}</span>
+            {(state?.businessInfo?.name || 'CAPITAL TRADERS').split(' ')[0]} <span className="text-amber-400">{(state?.businessInfo?.name || '').split(' ').slice(1).join(' ')}</span>
           </h1>
           <p className="text-lg md:text-2xl mb-12 opacity-90 font-medium max-w-3xl mx-auto">
             Authorized Retailers of Premium Global Tyre Brands in Islamabad.
@@ -153,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                     <div className="space-y-4">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Best Match Sizes:</p>
                       <div className="flex flex-wrap gap-2">
-                        {v.recommendedSizes.map(size => (
+                        {(v.recommendedSizes || []).map(size => (
                           <button 
                             key={size} 
                             onClick={() => { setSearchType('size'); setSearchTerm(size); }}
@@ -174,7 +179,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                      <div className="h-56 overflow-hidden relative">
                        <img src={t.image} alt={t.pattern} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-black uppercase text-gray-900 shadow-lg">
-                         {state.brands.find(b => b.id === t.brandId)?.name}
+                         {brands.find(b => b.id === t.brandId)?.name}
                        </div>
                      </div>
                      <div className="p-6">
@@ -194,7 +199,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
           </div>
         ) : null}
 
-        {/* Brands Grid - RESIZED TO EXACTLY MATCH SERVICES */}
+        {/* Brands Grid */}
         <section id="brands" className="mb-20">
           <div className="flex items-center gap-4 mb-10">
             <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter">Premium Brands</h2>
@@ -207,7 +212,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
                 onClick={() => onNavigate('brand', brand.id)}
                 className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col"
               >
-                {/* MATCHING h-44 FROM SERVICES */}
                 <div className="h-44 bg-gray-50 flex items-center justify-center p-8 group-hover:bg-white transition-colors">
                   <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500" />
                 </div>
@@ -227,7 +231,7 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
             <h2 className="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tighter">Expert Auto Services</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {state.services.map(service => (
+            {services.map(service => (
               <div key={service.id} className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden group hover:border-gray-900 transition-all flex flex-col">
                 <div className="h-44 overflow-hidden relative">
                   <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
@@ -261,10 +265,6 @@ const Dashboard: React.FC<DashboardProps> = ({ state, onNavigate, themeColor }) 
               >
                 Contact Support
               </button>
-              <div className="flex items-center justify-center md:justify-start gap-4 text-sm font-black">
-                <span className="flex items-center opacity-70"><i className="fas fa-check-circle mr-2"></i> Genuine Tyres</span>
-                <span className="flex items-center opacity-70"><i className="fas fa-check-circle mr-2"></i> Fast Fitting</span>
-              </div>
             </div>
           </div>
         </section>
