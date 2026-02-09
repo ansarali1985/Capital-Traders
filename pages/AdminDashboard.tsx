@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppState, Brand, Tyre, Vehicle, Service, BusinessInfo, AppTheme } from '../types.ts';
 import { THEMES } from '../constants.ts';
@@ -47,6 +46,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 200 * 1024) { // 200KB limit for base64
+        alert("File too large! Please use images under 200KB to ensure cloud sync works correctly.");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => callback(reader.result as string);
       reader.readAsDataURL(file);
@@ -55,14 +58,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const pushToCloud = async () => {
     setIsSyncing(true);
+    const payload = JSON.stringify(state);
+    const sizeInKb = (payload.length / 1024).toFixed(2);
+
+    // Warning for large payloads
+    if (parseFloat(sizeInKb) > 150) {
+      const proceed = confirm(`Warning: Your database size is ${sizeInKb}KB. Large databases (with many base64 images) may fail to sync to public cloud bins. Continue anyway?`);
+      if (!proceed) {
+        setIsSyncing(false);
+        return;
+      }
+    }
+
     try {
       const response = await fetch('https://api.npoint.io/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state)
+        body: payload
       });
       
-      if (!response.ok) throw new Error("Cloud rejection");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Cloud rejection (${response.status}): ${errorText || 'Server Error'}`);
+      }
       
       const result = await response.json();
       const syncId = result.id;
@@ -71,11 +89,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const shareUrl = `${window.location.origin}${window.location.pathname}?sync=${syncId}`;
       
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert(`GLOBAL CLOUD SYNC SUCCESS!\n\nSync ID: ${syncId}\n\nYour database has been pushed to the cloud. Share this link to sync other devices instantly:\n\n${shareUrl}`);
+        alert(`GLOBAL CLOUD SYNC SUCCESS!\n\nSync ID: ${syncId}\n\nYour database has been pushed to the cloud. Share this link to sync other devices:\n\n${shareUrl}`);
       });
-    } catch (e) {
-      alert("Sync failed. Ensure you have an internet connection.");
-      console.error(e);
+    } catch (e: any) {
+      console.error("Sync Error:", e);
+      alert(`Sync failed: ${e.message}\n\nCommon fixes:\n1. Reduce image sizes\n2. Check your internet connection\n3. Try again in a few minutes.`);
     } finally {
       setIsSyncing(false);
     }
@@ -200,7 +218,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className={`p-8 rounded-[2rem] border-2 grid grid-cols-1 md:grid-cols-3 gap-6 items-end ${editingId ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'}`}>
               <div><label className={labelClass}>Brand Identity</label><input type="text" className={inputClass} value={brandForm.name || ''} onChange={e => setBrandForm({...brandForm, name: e.target.value})} /></div>
               <div><label className={labelClass}>Origin</label><input type="text" className={inputClass} value={brandForm.origin || ''} onChange={e => setBrandForm({...brandForm, origin: e.target.value})} /></div>
-              <div><label className={labelClass}>Logo</label><input type="file" className="w-full text-xs" onChange={e => handleFileUpload(e, b64 => setBrandForm({...brandForm, logo: b64}))} /></div>
+              <div><label className={labelClass}>Logo</label><input type="file" className="w-full text-xs" accept="image/*" onChange={e => handleFileUpload(e, b64 => setBrandForm({...brandForm, logo: b64}))} /></div>
               <button onClick={saveBrand} className="md:col-span-3 bg-gray-900 text-white py-4 rounded-xl font-black uppercase text-xs shadow-lg">{editingId ? 'Update Brand' : 'Register Brand'}</button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
